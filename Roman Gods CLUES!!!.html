@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Roman Gods & Rome Review</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/7/7d/Roman_columns.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  .container {
+    background: rgba(255,255,255,0.75);
+    padding: 20px;
+    border-radius: 10px;
+  }
+  .question { display: none; margin-bottom: 20px; }
+  .question.active { display: block; }
+  .clue { background: #eef; padding: 15px; margin: 20px 0; border-left: 4px solid #66f; border-radius: 8px; }
+  button { margin-top: 10px; padding: 8px 12px; font-size: 16px; }
+  #scoreboard {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    background: rgba(255,255,255,0.85);
+    padding: 15px;
+    border-radius: 10px;
+    width: 180px;
+  }
+  #scoreboard h3 { margin-top: 0; }
+  .god-theme { border: 4px solid gold; padding: 10px; border-radius: 10px; margin-bottom: 20px; }
+  .jupiter { background: linear-gradient(#d9d9ff, #ffffff); }
+  .minerva { background: linear-gradient(#fff2cc, #ffffff); }
+  .pluto { background: linear-gradient(#e6e6e6, #cfcfcf); }
+  .mercury { background: linear-gradient(#e0f7ff, #ffffff); }
+  .saturn { background: linear-gradient(#f2e6ff, #ffffff); }
+</style>
+</head>
+<body>
+<div id="scoreboard">
+  <h3>Scoreboard</h3>
+  <p id="score">Correct: 0</p>
+  <button onclick="restartQuiz()">Restart Quiz</button>
+</div>
+
+<div class="container">
+<h1>Roman Gods & Rome Quiz</h1>
+<p>Answer each question. Regardless of correctness, you move on — but only perfect scores in each god’s section unlock their divine clue.</p>
+<div id="quiz"></div>
+<div id="result"></div>
+</div>
+
+<script>
+// -------------------- UPDATED WITH SHUFFLED ANSWERS --------------------
+
+function shuffle(arr){ return arr.sort(() => Math.random() - 0.5); }
+
+const questions = [
+  {q:"What was the top god of the Roman pantheon called?", a:"Jupiter", options:shuffle(["Jupiter","Mars","Venus","Apollo"]), god:"jupiter"},
+  {q:"Who was Jupiter’s wife and goddess of marriage?", a:"Juno", options:shuffle(["Minerva","Juno","Diana","Vesta"]), god:"jupiter"},
+  {q:"Which Roman god ruled the seas and held a trident?", a:"Neptune", options:shuffle(["Neptune","Pluto","Apollo","Mercury"]), god:"jupiter"},
+  {q:"Which Roman god was the god of war?", a:"Mars", options:shuffle(["Mars","Vulcan","Bacchus","Cupid"]), god:"jupiter"},
+  {q:"Who was the Roman messenger god?", a:"Mercury", options:shuffle(["Mercury","Apollo","Vulcan","Mars"]), god:"jupiter"},
+  {q:"Which goddess represented love and beauty?", a:"Venus", options:shuffle(["Venus","Diana","Juno","Minerva"]), god:"jupiter"},
+  {q:"Who is Venus’s son who makes people fall in love?", a:"Cupid", options:shuffle(["Cupid","Bacchus","Vulcan","Neptune"]), god:"jupiter"},
+
+  {q:"Blacksmith god of fire and volcanoes?", a:"Vulcan", options:shuffle(["Vulcan","Mars","Apollo","Mercury"]), god:"minerva"},
+  {q:"God of the sun, music, and poetry?", a:"Apollo", options:shuffle(["Apollo","Neptune","Mars","Pluto"]), god:"minerva"},
+  {q:"Goddess of wisdom born from Jupiter’s head?", a:"Minerva", options:shuffle(["Minerva","Vesta","Juno","Diana"]), god:"minerva"},
+  {q:"Moon and hunt goddess?", a:"Diana", options:shuffle(["Diana","Venus","Minerva","Juno"]), god:"minerva"},
+  {q:"Roman god of wine?", a:"Bacchus", options:shuffle(["Bacchus","Cupid","Apollo","Pluto"]), god:"minerva"},
+  {q:"Center of Roman public life?", a:"The Forum", options:shuffle(["The Forum","The Colosseum","Circus Maximus","Domus"]), god:"minerva"},
+  {q:"Large Roman city house?", a:"Domus", options:shuffle(["Domus","Villa","Insula","Atrium"]), god:"minerva"},
+  {q:"Central open room of a domus?", a:"Atrium", options:shuffle(["Atrium","Forum","Tablinum","Cubiculum"]), god:"minerva"},
+
+  {q:"Oldest male head of household?", a:"Pater familias", options:shuffle(["Pater familias","Consul","Senator","Tribune"]), god:"pluto"},
+  {q:"Elite wealthy families?", a:"Patricians", options:shuffle(["Patricians","Plebeians","Equites","Slaves"]), god:"pluto"},
+  {q:"Commoner citizens?", a:"Plebeians", options:shuffle(["Plebeians","Patricians","Consuls","Senators"]), god:"pluto"},
+  {q:"People without citizenship, considered property?", a:"Enslaved people", options:shuffle(["Enslaved people","Plebeians","Equites","Patricians"]), god:"pluto"},
+  {q:"Food and entertainment to distract public?", a:"Bread and circuses", options:shuffle(["Bread and circuses","Pax Romana","Carpe diem","Veni vidi vici"]), god:"pluto"},
+
+  {q:"Chariot racing venue?", a:"Circus Maximus", options:shuffle(["Circus Maximus","Colosseum","Forum","Pantheon"]), god:"mercury"},
+  {q:"Amphitheater for gladiators?", a:"The Colosseum", options:shuffle(["The Colosseum","Circus Maximus","Pantheon","Forum"]), god:"mercury"},
+  {q:"Caesar’s 'I came, I saw, I conquered'?", a:"Veni, vidi, vici", options:shuffle(["Veni, vidi, vici","Alea iacta est","Carpe diem","Et tu, Brute?"]), god:"mercury"},
+  {q:"Region Caesar conquered?", a:"Gaul", options:shuffle(["Gaul","Egypt","Britannia","Hispania"]), god:"mercury"},
+  {q:"Two elected Roman leaders?", a:"Consuls", options:shuffle(["Consuls","Senators","Proconsuls","Tribunes"]), god:"mercury"},
+
+  {q:"300-man governing body?", a:"The Senate", options:shuffle(["The Senate","The Assembly","The Forum","The Council"]), god:"saturn"},
+  {q:"Power to stop a consul’s decision?", a:"Veto", options:shuffle(["Veto","Census","Decree","Tribute"]), god:"saturn"},
+  {q:"Post-consul provincial office?", a:"Proconsul", options:shuffle(["Proconsul","Dictator","Praetor","Quaestor"]), god:"saturn"},
+  {q:"General who crossed Alps with elephants?", a:"Hannibal", options:shuffle(["Hannibal","Scipio","Caesar","Pompey"]), god:"saturn"},
+  {q:"Wars fought with Carthage?", a:"The Punic Wars", options:shuffle(["The Punic Wars","Gallic Wars","Civil Wars","Macedonian Wars"]), god:"saturn"}
+];
+
+// GOD SECTION DATA
+const gods = {
+  jupiter:{start:0,end:6,clue:"I, Jupiter, have seen all things. The emperor was not pierced or hurt on the outside. His wounds came from within."},
+  minerva:{start:7,end:14,clue:"I, Minerva, possess all wisdom. Watch not the dead emperor, but watch who shall replace him."},
+  pluto:{start:15,end:19,clue:"I, Pluto, god of the underworld, am with the great emperor now. He says the last thing he remembers before his death was eating at the dinner table with the other senators."},
+  mercury:{start:20,end:24,clue:"I, Mercury, do see that evil was passed through the messengers of Rome. Someone carried the emperor's death with them into the palace."},
+  saturn:{start:25,end:29,clue:"I, Saturn, do see that the person responsible for all of this came from Plebeian birth."}
+};
+
+let correctTracker = new Array(questions.length).fill(false);
+let current = 0;
+
+function loadQuiz() {
+  const quizDiv = document.getElementById("quiz");
+  quizDiv.innerHTML = "";
+
+  questions.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = `question ${item.god} god-theme` + (index === 0 ? " active" : "");
+    div.id = "q" + index;
+
+    let html = `<h3>Question ${index + 1}</h3><p>${item.q}</p>`;
+    item.options.forEach(opt => {
+      html += `<label><input type='radio' name='q${index}' value='${opt}'> ${opt}</label><br>`;
+    });
+    html += `<button onclick=\"submitAnswer(${index})\">Submit</button>`;
+
+    div.innerHTML = html;
+    quizDiv.appendChild(div);
+  });
+}
+
+function submitAnswer(i) {
+  const selected = document.querySelector(`input[name='q${i}']:checked`);
+  if (!selected) return;
+
+  if (selected.value === questions[i].a) correctTracker[i] = true;
+  updateScore();
+
+  document.getElementById("q" + i).classList.remove("active");
+
+  if (i + 1 < questions.length) document.getElementById("q" + (i + 1)).classList.add("active");
+  else endQuiz();
+
+  checkGodCompletion(i);
+}
+
+function updateScore() {
+  document.getElementById("score").textContent = `Correct: ${correctTracker.filter(x => x).length}`;
+}
+
+function checkGodCompletion(i) {
+  const godKey = questions[i].god;
+  const g = gods[godKey];
+  if (i === g.end) {
+    let allCorrect = true;
+    for (let j = g.start; j <= g.end; j++) if (!correctTracker[j]) allCorrect = false;
+    if (allCorrect) {
+      const clueDiv = document.createElement("div");
+      clueDiv.className = "clue";
+      clueDiv.innerText = g.clue;
+      document.body.appendChild(clueDiv);
+    }
+  }
+}
+
+function endQuiz() {
+  const total = correctTracker.filter(x => x).length;
+  document.getElementById("result").innerHTML = `<h2>Quiz Complete!</h2><p>You answered ${total} / ${questions.length} correctly.</p>`;
+}
+
+function restartQuiz() {
+  correctTracker = new Array(questions.length).fill(false);
+  updateScore();
+  loadQuiz();
+  document.getElementById("result").innerHTML = "";
+  document.querySelectorAll(".clue").forEach(e => e.remove());
+}
+
+loadQuiz();
+</script>
+</body>
+</html>
+
